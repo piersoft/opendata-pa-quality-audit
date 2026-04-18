@@ -29,6 +29,9 @@ on:
           - json
 
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   audit:
     name: Audit CSV — ${{ inputs.catalog_url || vars.CATALOG_URL }}
@@ -37,12 +40,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4.4.0
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Esegui audit
         run: |
@@ -66,7 +69,7 @@ jobs:
             --output output
 
       - name: Upload report come artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4.6.2
         if: always()
         with:
           name: report-qualita-${{ github.run_number }}
