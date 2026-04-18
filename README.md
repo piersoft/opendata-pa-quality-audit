@@ -101,7 +101,7 @@ node src/auditor.js --help
 | Opzione | Default | Descrizione |
 |---------|---------|-------------|
 | `--url` | — | URL base del catalogo CKAN (**obbligatorio**) |
-| `--limit` | 100 | Numero massimo di risorse CSV (nessun limite in locale; max 2000 su GitHub Actions) |
+| `--limit` | 100 | Numero massimo di risorse CSV (nessun limite in locale; max 5000 su GitHub Actions) |
 | `--concurrency` | 5 | Richieste parallele (max 10) |
 | `--format` | all | Formato output: `all`, `csv`, `json`, `html` |
 | `--output` | output | Directory di output |
@@ -118,7 +118,7 @@ Nella directory `output/` vengono generati:
 
 ## Limiti e protezioni
 
-- **Massimo 2000 risorse** per run su GitHub Actions (protezione minuti gratuiti); nessun limite in locale
+- **Massimo 5000 risorse** per run su GitHub Actions (protezione minuti gratuiti); nessun limite in locale
 - **Timeout 15s** per singolo download CSV
 - **Dimensione massima 5 MB** per file CSV
 - **Concorrenza massima 10** richieste parallele
