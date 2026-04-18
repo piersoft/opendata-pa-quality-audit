@@ -1,0 +1,94 @@
+name: Audit Qualità Open Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      catalog_url:
+        description: 'URL base del catalogo CKAN (es. https://dati.comune.milano.it)'
+        required: true
+        type: string
+      limit:
+        description: 'Numero massimo di risorse CSV da analizzare (max 500)'
+        required: false
+        default: '100'
+        type: string
+      concurrency:
+        description: 'Richieste parallele (max 10)'
+        required: false
+        default: '5'
+        type: string
+      format:
+        description: 'Formato output'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - html
+          - csv
+          - json
+
+  schedule:
+    # Esempio: audit settimanale ogni lunedì alle 6:00
+    # Decommenta e configura CATALOG_URL nei secrets per abilitarlo
+    # - cron: '0 6 * * 1'
+
+jobs:
+  audit:
+    name: Audit CSV — ${{ inputs.catalog_url || vars.CATALOG_URL }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Esegui audit
+        run: |
+          CATALOG="${{ inputs.catalog_url || vars.CATALOG_URL }}"
+          LIMIT="${{ inputs.limit || '100' }}"
+          CONCURRENCY="${{ inputs.concurrency || '5' }}"
+          FORMAT="${{ inputs.format || 'all' }}"
+
+          if [ -z "$CATALOG" ]; then
+            echo "❌ Errore: nessun URL catalogo specificato."
+            echo "   Passa --catalog_url come input oppure imposta la variabile CATALOG_URL nel repository."
+            exit 1
+          fi
+
+          echo "🦁 Avvio audit su: $CATALOG"
+          node src/auditor.js \
+            --url "$CATALOG" \
+            --limit "$LIMIT" \
+            --concurrency "$CONCURRENCY" \
+            --format "$FORMAT" \
+            --output output
+
+      - name: Upload report come artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-qualita-${{ github.run_number }}
+          path: output/
+          retention-days: 30
+
+      - name: Sommario nel log
+        if: always()
+        run: |
+          if [ -f output/report.csv ]; then
+            echo "### 📊 Report generato" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| File | Dimensione |" >> $GITHUB_STEP_SUMMARY
+            echo "|------|-----------|" >> $GITHUB_STEP_SUMMARY
+            for f in output/*; do
+              size=$(du -sh "$f" | cut -f1)
+              echo "| $f | $size |" >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Scarica il report dalla sezione **Artifacts** di questo run." >> $GITHUB_STEP_SUMMARY
+          fi

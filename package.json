@@ -1,0 +1,20 @@
+{
+  "name": "opendata-pa-quality-audit",
+  "version": "1.0.0",
+  "description": "Validazione batch della qualità dei CSV nei cataloghi open data della PA italiana",
+  "type": "module",
+  "main": "src/auditor.js",
+  "scripts": {
+    "audit": "node src/auditor.js",
+    "help": "node src/auditor.js --help"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "open-data", "CKAN", "CSV", "qualità-dati", "PA-italiana",
+    "dati-gov-it", "validazione", "DCAT-AP"
+  ],
+  "author": "Piersoft",
+  "license": "MIT"
+}
