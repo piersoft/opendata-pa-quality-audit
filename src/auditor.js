@@ -119,9 +119,9 @@ async function discoverCsvResources() {
     { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, 8_000
   ).then(r => r.json()).catch(() => ({ result: { count: "?" } })))?.result?.count;
 
-  log(`📦 Trovate ${resources.length} risorse CSV (totale catalogo: ${total})`);
-  if (resources.length < LIMIT && resources.length < total) {
-    log(`   (Analizzate le prime ${resources.length} — usa --limit per aumentare)`);
+  log(`📦 Trovate ${resources.length} risorse CSV in ${total} dataset con almeno una risorsa CSV`);
+  if (resources.length >= LIMIT) {
+    log(`   (Limite raggiunto: ${LIMIT} — usa --limit per aumentare)`);
   }
   return resources;
 }
