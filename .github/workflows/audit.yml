@@ -28,10 +28,6 @@ on:
           - csv
           - json
 
-  schedule:
-    # Esempio: audit settimanale ogni lunedì alle 6:00
-    # Decommenta e configura CATALOG_URL nei secrets per abilitarlo
-    # - cron: '0 6 * * 1'
 
 jobs:
   audit:
