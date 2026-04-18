@@ -45,7 +45,9 @@ ESEMPI:
 }
 
 const CKAN_URL   = args.url.replace(/\/$/, "");
-const LIMIT      = Math.min(parseInt(args.limit) || 100, 500);
+const IS_CI      = !!process.env.GITHUB_ACTIONS;
+const MAX_LIMIT  = IS_CI ? 2000 : Infinity;
+const LIMIT      = Math.min(parseInt(args.limit) || 100, MAX_LIMIT);
 const POOL_SIZE  = Math.min(parseInt(args.concurrency) || 5, 10);
 const OUTPUT_DIR = args.output;
 const FORMAT     = args.format;

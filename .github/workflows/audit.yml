@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       limit:
-        description: 'Numero massimo di risorse CSV da analizzare (max 500)'
+        description: 'Numero massimo di risorse CSV da analizzare (max 2000 su Actions, illimitato in locale)'
         required: false
         default: '100'
         type: string
