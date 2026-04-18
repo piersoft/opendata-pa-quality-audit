@@ -99,7 +99,12 @@ Puoi eseguire l'audit direttamente su GitHub senza installare nulla in locale.
 2. Vai su **Actions** → **Audit Qualità Open Data**
 3. Clicca **Run workflow**
 4. Inserisci l'URL del catalogo CKAN e i parametri desiderati
-5. Al termine, scarica il report dalla sezione **Artifacts**
+5. Attendi il completamento del run (icona verde ✅)
+6. Clicca sul run completato nell'elenco dei workflow
+7. Scorri in fondo alla pagina — trovi la sezione **Artifacts** con il file `report-qualita-N`
+8. Clicca per scaricare lo zip contenente `report.html`, `report.csv` e `report.json`
+
+> **Nota**: il report non è disponibile durante l'esecuzione. Bisogna attendere il completamento, tornare all'elenco dei run e riaprire il run completato per trovare gli Artifacts.
 
 ### Audit schedulato
 
