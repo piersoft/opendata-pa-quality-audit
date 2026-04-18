@@ -37,6 +37,33 @@ I check si basano su una sintesi ragionata di standard internazionali e normativ
 
 ---
 
+## Uso con GitHub Actions
+
+Puoi eseguire l'audit direttamente su GitHub senza installare nulla in locale.
+
+### Setup
+
+1. **Fork** questo repository
+2. Vai su **Actions** → **Audit Qualità Open Data**
+3. Clicca **Run workflow**
+4. Inserisci l'URL del catalogo CKAN e i parametri desiderati
+5. Attendi il completamento del run (icona verde ✅)
+6. Clicca sul run completato nell'elenco dei workflow
+7. Scorri in fondo alla pagina — trovi la sezione **Artifacts** con il file `report-qualita-N`
+8. Clicca per scaricare lo zip contenente `report.html`, `report.csv` e `report.json`
+
+> **Nota**: il report non è disponibile durante l'esecuzione. Bisogna attendere il completamento, tornare all'elenco dei run e riaprire il run completato per trovare gli Artifacts.
+
+### Audit schedulato
+
+Per eseguire l'audit automaticamente ogni settimana:
+
+1. Vai su **Settings** → **Variables** → **Actions**
+2. Crea una variabile `CATALOG_URL` con l'URL del tuo catalogo
+3. Nel file `.github/workflows/audit.yml`, decommenta la riga `schedule`
+
+---
+
 ## Uso locale
 
 ### Prerequisiti
@@ -86,33 +113,6 @@ Nella directory `output/` vengono generati:
 - `report.csv` — tabella completa dei risultati
 - `report.json` — dati strutturati con sommario e dettaglio
 - `report.html` — report visuale con tabella interattiva e check più violati
-
----
-
-## Uso con GitHub Actions
-
-Puoi eseguire l'audit direttamente su GitHub senza installare nulla in locale.
-
-### Setup
-
-1. **Fork** questo repository
-2. Vai su **Actions** → **Audit Qualità Open Data**
-3. Clicca **Run workflow**
-4. Inserisci l'URL del catalogo CKAN e i parametri desiderati
-5. Attendi il completamento del run (icona verde ✅)
-6. Clicca sul run completato nell'elenco dei workflow
-7. Scorri in fondo alla pagina — trovi la sezione **Artifacts** con il file `report-qualita-N`
-8. Clicca per scaricare lo zip contenente `report.html`, `report.csv` e `report.json`
-
-> **Nota**: il report non è disponibile durante l'esecuzione. Bisogna attendere il completamento, tornare all'elenco dei run e riaprire il run completato per trovare gli Artifacts.
-
-### Audit schedulato
-
-Per eseguire l'audit automaticamente ogni settimana:
-
-1. Vai su **Settings** → **Variables** → **Actions**
-2. Crea una variabile `CATALOG_URL` con l'URL del tuo catalogo
-3. Nel file `.github/workflows/audit.yml`, decommenta la riga `schedule`
 
 ---
 
