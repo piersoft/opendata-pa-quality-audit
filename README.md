@@ -17,23 +17,34 @@ Dato l'URL di un catalogo CKAN (es. `https://dati.comune.milano.it`), lo strumen
 
 ### Standard di riferimento
 
-I check si basano su una sintesi ragionata di standard internazionali e normativa italiana:
+I check si basano su una sintesi ragionata di standard internazionali, normativa italiana e buone pratiche open data:
 
-| Check | Standard |
-|-------|----------|
-| S1–S6 | RFC 4180 — struttura CSV |
-| S8–S11 | RFC 4180 • W3C CSVW • Unicode — encoding |
-| C1 | ISO/IEC 25012 — Unicità |
-| C2 | ISO/IEC 25012 — Completezza |
-| C4 | ISO/IEC 25012 — Consistenza |
-| C5 | ISO 8601:2019 — date |
-| C6 | RFC 4180 — separatore decimale |
-| C7 | ISO/IEC 25012 — Accuratezza |
-| O1–O4 | Linee guida AGID Open Data v1.0 (2024) |
-| L1–L2 | dati-semantic-assets • schema.gov.it |
-| L3 | Vocabolari controllati ISTAT |
-| L4 | D.Lgs. 36/2023 • ANAC (CIG/CUP) |
-| L6 | Modello 5 stelle Open Data — W3C |
+| Check | Cosa verifica | Riferimento | Tipo |
+|-------|--------------|-------------|------|
+| S1–S6 | Struttura CSV: separatore, intestazioni, colonne | [RFC 4180](https://www.rfc-editor.org/rfc/rfc4180) | Standard formale |
+| S7 | Dimensione file (soglia 5 MB) | Nessuno standard normativo | Scelta pragmatica |
+| S8–S9 | Encoding UTF-8, caratteri illeggibili, accentate corrotte | RFC 4180 § 2 • Unicode Standard | Standard formale |
+| S10 | Marcatore BOM | W3C CSVW — raccomanda UTF-8 senza BOM | Buona pratica |
+| S11–S12 | Caratteri di controllo nascosti, righe vuote | RFC 4180 | Standard formale |
+| C1 | Righe duplicate | [ISO/IEC 25012](https://www.iso.org/standard/35736.html) — Unicità | Standard formale |
+| C2 | Valori mancanti | ISO/IEC 25012 — Completezza | Standard formale |
+| C3 | Colonna identificatore univoco | Buona pratica per interoperabilità e Linked Data | Buona pratica |
+| C4 | Coerenza tipi per colonna | ISO/IEC 25012 — Consistenza (applicazione pratica) | Buona pratica |
+| C5 | Date in formato standard | [ISO 8601:2019](https://www.iso.org/iso-8601-date-and-time-format.html) | Standard formale |
+| C6 | Separatore decimale (punto, non virgola) | [W3C CSVW](https://www.w3.org/TR/tabular-data-primer/) — xsd:decimal usa il punto | Standard formale |
+| C7 | Valori statisticamente anomali (outlier) | ISO/IEC 25012 — Accuratezza (applicazione pratica) | Buona pratica |
+| C8 | Celle molto lunghe (>500 caratteri) | Nessuno standard — segnale di dati non normalizzati | Scelta pragmatica |
+| O1–O2 | Numero minimo di righe e colonne | Buona pratica consolidata — nessuna soglia normativa | Buona pratica |
+| O3 | Intestazioni descrittive | [Linee guida AGID Open Data v1.0 (2024)](https://www.agid.gov.it/sites/agid/files/2024-05/lg-open-data_v.1.0_1.pdf) | Linee guida |
+| O4 | Intestazioni minuscolo con underscore | W3C CSVW — naming convention raccomandato | Buona pratica |
+| O5–O6 | Riferimento geografico e temporale | Buona pratica per riusabilità — non è obbligo per il CSV | Buona pratica |
+| O7–O10 | Caratteri speciali, URI, booleani, commenti | W3C CSVW e best practice Linked Data | Buona pratica |
+| L1 | Identificatori UUID | [W3C Best Practices Linked Data](https://www.w3.org/TR/ld-bp/) | Buona pratica |
+| L2 | Mapping colonne a ontologie PA italiane | [dati-semantic-assets](https://github.com/italia/dati-semantic-assets) • [schema.gov.it](https://schema.gov.it) | Standard formale |
+| L3 | Codici ISTAT per territori | Vocabolari controllati ISTAT — schema.gov.it | Standard formale |
+| L4 | CIG e CUP negli appalti pubblici | [D.Lgs. 36/2023](https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2023-03-31;36) • ANAC | Normativa italiana |
+| L5 | URI di ontologie note nei valori | W3C Best Practices for Publishing Linked Data | Buona pratica |
+| L6 | Potenziale 5 stelle Open Data | [Modello 5 stelle — Tim Berners-Lee / W3C](https://5stardata.info/en/) | Standard formale |
 
 ---
 
