@@ -154,28 +154,29 @@ async function validateResource(res) {
   };
 
   try {
-    // HEAD request per verificare Content-Type
+    // HEAD request — solo per escludere ZIP e PDF in modo definitivo.
+    // text/html NON è motivo di blocco: molti portali PA (CKAN Puglia, OpenData Sicilia…)
+    // restituiscono Content-Type: text/html anche per CSV validi — bug lato server.
+    // Il contenuto reale viene verificato dopo il download.
     let ct = "";
     try {
       const head = await fetchWithTimeout(res.resource_url, { method: "HEAD" }, 8_000);
       ct = (head.headers.get("content-type") || "").toLowerCase();
     } catch {}
 
-    const isHtml = ct.includes("text/html");
-    const isZip  = ct.includes("zip") || res.resource_url.toLowerCase().endsWith(".zip");
-    const isPdf  = ct.includes("pdf") || res.resource_url.toLowerCase().endsWith(".pdf");
+    const isZip = ct.includes("zip") || res.resource_url.toLowerCase().endsWith(".zip");
+    const isPdf = ct.includes("pdf") || res.resource_url.toLowerCase().endsWith(".pdf");
 
-    if (isHtml) { result.error = "URL punta a pagina HTML, non al file CSV diretto"; return result; }
-    if (isZip)  { result.error = "Risorsa è un archivio ZIP"; return result; }
-    if (isPdf)  { result.error = "Risorsa è un PDF"; return result; }
+    if (isZip) { result.error = "Risorsa è un archivio ZIP — non è un CSV"; return result; }
+    if (isPdf) { result.error = "Risorsa è un PDF — non è un CSV"; return result; }
 
-    // Download CSV
+    // Download CSV (accettiamo anche text/html a livello HEAD — verifichiamo il contenuto reale)
     const r = await fetchWithTimeout(res.resource_url, {
       headers: { "User-Agent": "opendata-pa-quality-audit/1.0" }
     });
     if (!r.ok) { result.error = `HTTP ${r.status}`; return result; }
 
-    // Controlla dimensione
+    // Controlla dimensione dichiarata
     const contentLength = parseInt(r.headers.get("content-length") || "0");
     if (contentLength > MAX_CSV_SIZE) {
       result.error = `File troppo grande (${(contentLength/1024/1024).toFixed(1)} MB > 5 MB)`;
@@ -183,8 +184,11 @@ async function validateResource(res) {
     }
 
     const raw = await r.text();
-    if (raw.trimStart().startsWith("<")) {
-      result.error = "Contenuto HTML ricevuto invece di CSV";
+
+    // Verifica contenuto reale: se inizia con < è davvero HTML (pagina di errore o redirect)
+    const trimmed = raw.trimStart();
+    if (trimmed.startsWith("<")) {
+      result.error = "Il server ha restituito una pagina HTML invece del file CSV (probabile link scaduto o redirect)";
       return result;
     }
     if (raw.length > MAX_CSV_SIZE) {
