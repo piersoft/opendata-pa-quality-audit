@@ -86,7 +86,11 @@ async function discoverCsvResources() {
 
   while (resources.length < LIMIT) {
     const apiUrl = `${CKAN_URL}/api/3/action/package_search?` +
-      `fq=res_format:CSV${ORGS.length ? "+AND+organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")" : ""}&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
+      `fq=res_format:CSV${
+        ORGS.length === 0 ? "" :
+        ORGS.length === 1 ? "+AND+organization:" + encodeURIComponent(ORGS[0]) :
+        "+AND+organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")"
+      }&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
     let data;
     try {
       const r = await fetchWithTimeout(apiUrl, {
@@ -125,7 +129,11 @@ async function discoverCsvResources() {
   }
 
   const total = (await fetchWithTimeout(
-    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${ORGS.length ? "+AND+organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")" : ""}&rows=0`,
+    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${
+      ORGS.length === 0 ? "" :
+      ORGS.length === 1 ? "+AND+organization:" + encodeURIComponent(ORGS[0]) :
+      "+AND+organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")"
+    }&rows=0`,
     { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, API_TIMEOUT
   ).then(r => r.json()).catch(() => ({ result: { count: "?" } })))?.result?.count;
 
