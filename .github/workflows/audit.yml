@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       organization:
-        description: 'Slug organizzazione CKAN (es. comune-di-matera) — lascia vuoto per auditare tutto il catalogo'
+        description: 'Slug organizzazione/i CKAN, separati da virgola (es. comune-di-lecce,comune-di-montemesola) — lascia vuoto per auditare tutto il catalogo'
         required: false
         default: ''
         type: string
@@ -67,7 +67,14 @@ jobs:
           fi
 
           echo "🦁 Avvio audit su: $CATALOG"
-          [ -n "$ORG" ] && echo "   Organizzazione: $ORG"
+          if [ -n "$ORG" ]; then
+            COUNT=$(echo "$ORG" | tr ',' '\n' | wc -l | tr -d ' ')
+            if [ "$COUNT" -eq 1 ]; then
+              echo "   Organizzazione: $ORG"
+            else
+              echo "   Organizzazioni ($COUNT): $ORG"
+            fi
+          fi
 
           ORG_ARG=""
           [ -n "$ORG" ] && ORG_ARG="--org \"$ORG\""
