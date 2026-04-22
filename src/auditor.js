@@ -59,6 +59,7 @@ const OUTPUT_DIR = args.output;
 const FORMAT     = args.format;
 
 const FETCH_TIMEOUT = 15_000;  // 15s per download CSV
+const API_TIMEOUT   = process.env.GITHUB_ACTIONS ? 30_000 : 10_000;  // 30s su Actions, 10s in locale
 const MAX_CSV_SIZE  = 5 * 1024 * 1024; // 5MB
 
 // ── Utility ───────────────────────────────────────────────────────────────────
@@ -90,11 +91,12 @@ async function discoverCsvResources() {
     try {
       const r = await fetchWithTimeout(apiUrl, {
         headers: { "User-Agent": "opendata-pa-quality-audit/1.0" }
-      }, 10_000);
+      }, API_TIMEOUT);
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       data = await r.json();
     } catch (e) {
-      warn(`Errore API CKAN: ${e.message}`);
+      warn(`Errore API CKAN (${e.message}) — URL tentata: ${apiUrl}`);
+      warn(`Se stai usando GitHub Actions, il catalogo potrebbe bloccare gli IP di GH Actions. Prova in locale.`);
       break;
     }
 
@@ -124,7 +126,7 @@ async function discoverCsvResources() {
 
   const total = (await fetchWithTimeout(
     `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${ORGS.length ? "+AND+organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")" : ""}&rows=0`,
-    { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, 8_000
+    { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, API_TIMEOUT
   ).then(r => r.json()).catch(() => ({ result: { count: "?" } })))?.result?.count;
 
   log(`📦 Trovate ${resources.length} risorse CSV in ${total} dataset con almeno una risorsa CSV`);
@@ -426,7 +428,9 @@ async function main() {
 
   const resources = await discoverCsvResources();
   if (!resources.length) {
-    warn("Nessuna risorsa CSV trovata. Verifica l'URL del catalogo.");
+    warn("Nessuna risorsa CSV trovata.");
+    warn(`URL catalogo usata: ${CKAN_URL}/api/3/action/package_search`);
+    warn("Possibili cause: (1) URL errata, (2) catalogo non CKAN standard, (3) IP GitHub Actions bloccato dal server — prova in locale.");
     process.exit(1);
   }
 
