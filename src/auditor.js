@@ -12,6 +12,7 @@ import { validateCSV, detectSep, parseCSV } from "./validator.js";
 const { values: args } = parseArgs({
   options: {
     url:         { type: "string" },
+    org:         { type: "string" },               // slug organizzazione CKAN (es. comune-di-matera)
     limit:       { type: "string", default: "100" },
     concurrency: { type: "string", default: "5" },
     format:      { type: "string", default: "all" }, // all | csv | json | html
@@ -32,6 +33,7 @@ OPZIONI:
   --url          URL base del catalogo CKAN (es. https://dati.comune.milano.it)
   --limit        Numero massimo di dataset da analizzare (default: 100, max: 500)
   --concurrency  Richieste parallele (default: 5, max: 10)
+  --org          Slug organizzazione CKAN (es. comune-di-matera) — se omesso analizza tutto il catalogo
   --format       Formato output: all | csv | json | html (default: all)
   --output       Directory output (default: ./output)
   --help         Mostra questo messaggio
@@ -45,6 +47,7 @@ ESEMPI:
 }
 
 const CKAN_URL   = args.url.replace(/\/$/, "");
+const ORG        = (args.org || "").trim().toLowerCase();  // slug org, es. "comune-di-matera"
 const IS_CI      = !!process.env.GITHUB_ACTIONS;
 const MAX_LIMIT  = IS_CI ? 5000 : Infinity;
 const LIMIT      = Math.min(parseInt(args.limit) || 100, MAX_LIMIT);
@@ -79,7 +82,7 @@ async function discoverCsvResources() {
 
   while (resources.length < LIMIT) {
     const apiUrl = `${CKAN_URL}/api/3/action/package_search?` +
-      `fq=res_format:CSV&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
+      `fq=res_format:CSV${ORG ? "&fq=organization:" + encodeURIComponent(ORG) : ""}&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
     let data;
     try {
       const r = await fetchWithTimeout(apiUrl, {
@@ -117,7 +120,7 @@ async function discoverCsvResources() {
   }
 
   const total = (await fetchWithTimeout(
-    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV&rows=0`,
+    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${ORG ? "&fq=organization:" + encodeURIComponent(ORG) : ""}&rows=0`,
     { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, 8_000
   ).then(r => r.json()).catch(() => ({ result: { count: "?" } })))?.result?.count;
 
@@ -289,8 +292,9 @@ function writeJson(results, summary, dir) {
   return path;
 }
 
-function writeHtml(results, summary, dir, catalogUrl) {
+function writeHtml(results, summary, dir, catalogUrl, org = "") {
   const ts = new Date().toLocaleString("it-IT");
+  const orgLabel = org ? ` — Organizzazione: <strong>${escHtml(org)}</strong>` : "";
   const scoreColor = s => s >= 90 ? "#1a6b35" : s >= 60 ? "#f07b05" : "#b00020";
   const verdictEmoji = v => v === "buona_qualita" ? "✅" : v === "accettabile_con_riserva" ? "⚠️" : v ? "❌" : "—";
 
@@ -346,7 +350,7 @@ footer{text-align:center;padding:20px;font-size:12px;color:#8898a9}
 <body>
 <header>
   <h1>Report Qualità Open Data</h1>
-  <p>Catalogo: <strong>${escHtml(catalogUrl)}</strong> — Generato il ${ts} — opendata-pa-quality-audit</p>
+  <p>Catalogo: <strong>${escHtml(catalogUrl)}</strong>${orgLabel} — Generato il ${ts} — opendata-pa-quality-audit</p>
 </header>
 <div class="container">
   <div class="summary">
@@ -402,6 +406,7 @@ function escHtml(s) {
 async function main() {
   log(`\n🦁 opendata-pa-quality-audit`);
   log(`   Catalogo: ${CKAN_URL}`);
+  if (ORG) log(`   Organizzazione: ${ORG}`);
   log(`   Limite: ${LIMIT} risorse | Concorrenza: ${POOL_SIZE}`);
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
@@ -434,7 +439,7 @@ async function main() {
   const files = [];
   if (FORMAT === "all" || FORMAT === "csv")  files.push(writeCsv(results, OUTPUT_DIR));
   if (FORMAT === "all" || FORMAT === "json") files.push(writeJson(results, summary, OUTPUT_DIR));
-  if (FORMAT === "all" || FORMAT === "html") files.push(writeHtml(results, summary, OUTPUT_DIR, CKAN_URL));
+  if (FORMAT === "all" || FORMAT === "html") files.push(writeHtml(results, summary, OUTPUT_DIR, CKAN_URL, ORG));
   files.forEach(f => log(`   📄 ${f}`));
 
   log(`\n✅ Audit completato.\n`);
