@@ -33,7 +33,8 @@ OPZIONI:
   --url          URL base del catalogo CKAN (es. https://dati.comune.milano.it)
   --limit        Numero massimo di dataset da analizzare (default: 100, max: 500)
   --concurrency  Richieste parallele (default: 5, max: 10)
-  --org          Slug organizzazione CKAN (es. comune-di-matera) — se omesso analizza tutto il catalogo
+  --org          Slug organizzazione/i CKAN, separati da virgola (es. comune-di-lecce,comune-di-montemesola)
+                 Se omesso analizza tutto il catalogo
   --format       Formato output: all | csv | json | html (default: all)
   --output       Directory output (default: ./output)
   --help         Mostra questo messaggio
@@ -47,7 +48,9 @@ ESEMPI:
 }
 
 const CKAN_URL   = args.url.replace(/\/$/, "");
-const ORG        = (args.org || "").trim().toLowerCase();  // slug org, es. "comune-di-matera"
+const ORGS       = (args.org || "").split(",")            // lista slug, es. "comune-di-lecce,comune-di-montemesola"
+                     .map(s => s.trim().toLowerCase()).filter(Boolean);  // array pulito
+const ORG        = ORGS.join(", ");                        // stringa leggibile per i log
 const IS_CI      = !!process.env.GITHUB_ACTIONS;
 const MAX_LIMIT  = IS_CI ? 5000 : Infinity;
 const LIMIT      = Math.min(parseInt(args.limit) || 100, MAX_LIMIT);
@@ -82,7 +85,7 @@ async function discoverCsvResources() {
 
   while (resources.length < LIMIT) {
     const apiUrl = `${CKAN_URL}/api/3/action/package_search?` +
-      `fq=res_format:CSV${ORG ? "&fq=organization:" + encodeURIComponent(ORG) : ""}&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
+      `fq=res_format:CSV${ORGS.length ? "&fq=organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")" : ""}&rows=${pageSize}&start=${start}&sort=metadata_modified+desc`;
     let data;
     try {
       const r = await fetchWithTimeout(apiUrl, {
@@ -120,7 +123,7 @@ async function discoverCsvResources() {
   }
 
   const total = (await fetchWithTimeout(
-    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${ORG ? "&fq=organization:" + encodeURIComponent(ORG) : ""}&rows=0`,
+    `${CKAN_URL}/api/3/action/package_search?fq=res_format:CSV${ORGS.length ? "&fq=organization:(" + ORGS.map(o => encodeURIComponent(o)).join("+OR+") + ")" : ""}&rows=0`,
     { headers: { "User-Agent": "opendata-pa-quality-audit/1.0" } }, 8_000
   ).then(r => r.json()).catch(() => ({ result: { count: "?" } })))?.result?.count;
 
@@ -294,7 +297,12 @@ function writeJson(results, summary, dir) {
 
 function writeHtml(results, summary, dir, catalogUrl, org = "") {
   const ts = new Date().toLocaleString("it-IT");
-  const orgLabel = org ? ` — Organizzazione: <strong>${escHtml(org)}</strong>` : "";
+  const orgList  = org ? org.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const orgLabel = orgList.length === 1
+    ? ` — Organizzazione: <strong>${escHtml(orgList[0])}</strong>`
+    : orgList.length > 1
+      ? ` — Organizzazioni: <strong>${orgList.map(escHtml).join("</strong>, <strong>")}</strong>`
+      : "";
   const scoreColor = s => s >= 90 ? "#1a6b35" : s >= 60 ? "#f07b05" : "#b00020";
   const verdictEmoji = v => v === "buona_qualita" ? "✅" : v === "accettabile_con_riserva" ? "⚠️" : v ? "❌" : "—";
 
@@ -406,7 +414,8 @@ function escHtml(s) {
 async function main() {
   log(`\n🦁 opendata-pa-quality-audit`);
   log(`   Catalogo: ${CKAN_URL}`);
-  if (ORG) log(`   Organizzazione: ${ORG}`);
+  if (ORGS.length === 1) log(`   Organizzazione: ${ORGS[0]}`);
+  else if (ORGS.length > 1) log(`   Organizzazioni (${ORGS.length}): ${ORGS.join(", ")}`);
   log(`   Limite: ${LIMIT} risorse | Concorrenza: ${POOL_SIZE}`);
 
   mkdirSync(OUTPUT_DIR, { recursive: true });
