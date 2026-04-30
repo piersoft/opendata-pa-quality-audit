@@ -237,7 +237,7 @@ export function checksOpendata(rows, headers, raw = '') {
   const withSpaces = headers.filter(h => /[\s\-]/.test(h.trim()));
   const withUpper  = headers.filter(h => !/[\s\-]/.test(h.trim()) && /[A-Z]/.test(h));
   if (withSpaces.length) push('O4', 'Intestazioni con spazi o trattini',
-    `${withSpaces.map(h => '"' + h + '"').join(', ')} — usare underscore al posto di spazi (es. "data_apertura").`, 'warn');
+    `${withSpaces.map(h => '"' + h + '"').join(', ')} — usare underscore al posto di spazi (es. "data_apertura").`, 'info');
   if (withUpper.length) push('O4', 'Intestazioni con lettere maiuscole',
     `${withUpper.map(h => '"' + h + '"').join(', ')} — le LG AGID Open Data raccomandano il minuscolo, ma molti dataset PA usano maiuscolo per convenzione. Non è un requisito normativo bloccante.`, 'info');
   if (!withSpaces.length && !withUpper.length) push('O4', 'Intestazioni in formato ottimale', 'Minuscolo con underscore: formato raccomandato dalle LG AGID Open Data v1.0 (2024).', 'pass');
