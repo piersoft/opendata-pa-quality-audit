@@ -41,7 +41,7 @@ I check si basano su una sintesi ragionata di standard internazionali, normativa
 | C8 | Celle molto lunghe (> 500 caratteri) | Nessuno standard — segnale di dati non normalizzati | Scelta pragmatica |
 | O1–O2 | Numero minimo di righe e colonne | [LG AGID Open Data v1.0 (2024)](https://www.agid.gov.it/sites/agid/files/2024-05/lg-open-data_v.1.0_1.pdf) | Linee guida |
 | O3 | Intestazioni descrittive | LG AGID Open Data v1.0 (2024) | Linee guida |
-| O4 | Intestazioni: spazi/trattini (warn), maiuscole (info) | LG AGID Open Data v1.0 — raccomandazione, non obbligo normativo | Linee guida |
+| O4 | Intestazioni: spazi/trattini (warn), maiuscole (info) | Buona pratica — raccomandazione, non obbligo normativo | Buona pratica |
 | O5 | Caratteri speciali nelle intestazioni | [W3C CSVW](https://www.w3.org/TR/tabular-data-primer/) | Buona pratica |
 | O6 | URI o URL nei valori | [W3C Best Practices for Publishing Linked Data](https://www.w3.org/TR/ld-bp/) | Buona pratica |
 | O7 | Colonne booleane (coerenza true/false vs 0/1) | W3C CSVW | Buona pratica |
