@@ -39,7 +39,7 @@ jobs:
   audit:
     name: Audit CSV — ${{ inputs.catalog_url || vars.CATALOG_URL }}${{ inputs.organization && format(' / {0}', inputs.organization) || '' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
